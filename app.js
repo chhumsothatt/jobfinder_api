@@ -1,21 +1,13 @@
 const express = require("express");
 const app = express();
-const port = 3000;
 
-app.get('/',(req,res)=>{
-    console.log(req.query);
-    console.log("Hello world");
+app.use(express.json());
+require('dotenv').config();
 
-    res.send("<h1>Job Finder API</h1><p>Welcome to Job Finder API</p>")
-    
-})
-app.post('/register/:id', (req, res) => {
-    console.log("Hello world");
-    console.log(req.params.id); // Access the ID parameter
-    res.send("<h1>Job Finder API</h1><p>Welcome to Job Finder API</p>");
-});
+const auth = require('./routes/auth');
 
-app.listen(port,()=>{
-    console.log(`Server running on http://localhost:${port}`);
-    
+app.use('/api/',auth);
+
+app.listen(3000,()=>{
+    console.log(`Server running on http://localhost:${process.env.PORT}`);
 })
