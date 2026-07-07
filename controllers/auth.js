@@ -56,6 +56,8 @@ const resendVerificationEmail = async(req,res)=>{
 
 // user login
 const login = async(req,res)=>{
+    console.log(req);
+    
     try{
         let row = await auth.login(req.body);
         res.status(200).json({
@@ -71,9 +73,28 @@ const login = async(req,res)=>{
     }
 }
 
+// logout user
+const logout = async(req,res)=>{
+    try {
+        await auth.logout(req.user.id);
+        res.status(200).json({
+            result: true,
+            msg: "Logout Successfully"
+        })
+    } catch (error) {
+        res.status(422).json({
+            result: false,
+            msg: "Logout Fails"
+        })
+    }
+    
+    
+}
+
 module.exports = {
     register,
     verifyEmail,
     resendVerificationEmail,
     login,
+    logout
 }

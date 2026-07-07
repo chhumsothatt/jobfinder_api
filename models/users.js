@@ -57,6 +57,11 @@ const addToken = async(token,id) =>{
   let [rows] = await pool.query('UPDATE tbl_users set token = ? where id = ?',[token,id]);
 }
 
+// delete token
+const deleteToken = async(id)=>{
+  await pool.query("UPDATE tbl_users token = '' where id = ? ",[id]);
+}
+
 
 module.exports = {
   register,
@@ -66,4 +71,5 @@ module.exports = {
   findByVerificationToken,
   resendVerificationEmail,
   addToken,
+  deleteToken
 };
