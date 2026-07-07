@@ -4,8 +4,6 @@ const register = async(req,res)=>{
 
     try{
         let result = await auth.register(req.body);
-        console.log(req.body.name);
-        
         res.status(201).json({
             result: true,
             msg: "Register User Successfully",
@@ -20,13 +18,34 @@ const register = async(req,res)=>{
 }
 const verifyEmail = async(req,res)=>{
     try{
-        console.log(req.body);
+        
         let result = await auth.verifyEmail(req.query.token);
         res.json({
             result: true,
-            msg: "Verify Email Success fully"
+            msg: result.message 
         })
+        console.log('Verify email successfully');
 
+    }catch(error){
+        res.json({
+            result: false,
+            msg: error.message
+        })
+        console.log("Verify Email Faild");
+        
+    }
+}
+
+// resendverificationEmail
+const resendVerificationEmail = async(req,res)=>{
+    
+    try{
+        let result = await auth.resendverificationEmail(req.body);
+        res.status(200).json({
+            result: true,
+            msg: result.message,
+            // data: result
+        })
     }catch(error){
         res.json({
             result: false,
@@ -35,7 +54,26 @@ const verifyEmail = async(req,res)=>{
     }
 }
 
+// user login
+const login = async(req,res)=>{
+    try{
+        let row = await auth.login(req.body);
+        res.status(200).json({
+            result: true,
+            msg: "Login Successfully",
+            data: row
+        })
+    }catch(error){
+        res.status(400).json({
+            result: false,
+            msg: error.message
+        })
+    }
+}
+
 module.exports = {
     register,
-    verifyEmail
+    verifyEmail,
+    resendVerificationEmail,
+    login,
 }

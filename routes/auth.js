@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const {register,verifyEmail} = require('../controllers/auth');
+const {register,verifyEmail,resendVerificationEmail,login} = require('../controllers/auth');
 router.get('/',(req,res)=>{
     res.json({
         result: true,
@@ -9,6 +9,7 @@ router.get('/',(req,res)=>{
     })
 })
 router.post('/register',register);
-router.get('/verifyemail',verifyEmail)
-
+router.get('/verifyemail',verifyEmail);
+router.put('/resendverificationemail',resendVerificationEmail);
+router.post('/login',login);
 module.exports = router;
