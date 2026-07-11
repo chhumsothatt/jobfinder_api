@@ -4,12 +4,9 @@ const bcrypt = require("bcryptjs");
 const mailService = require("./mailService");
 const jwtConfig = require('../configs/jwt');
 const jwt = require('jsonwebtoken'); // for create token
+
 // ===============register
 const register = async (body) => {
-  // if empty
-  if (!body.name || !body.email || !body.password) {
-    throw new Error("Name, Email, Password is required");
-  }
 
   // duplicate
   let checkemail = await user.findByEmail(body.email);

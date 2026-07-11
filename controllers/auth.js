@@ -75,6 +75,8 @@ const login = async(req,res)=>{
 
 // logout user
 const logout = async(req,res)=>{
+    console.log("islogout");
+    
     try {
         await auth.logout(req.user.id);
         res.status(200).json({
