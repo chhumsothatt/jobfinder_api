@@ -1,6 +1,7 @@
 const profileModel = require('../../models/seekers/profile');
 
 const getProfile = async (userId) => {
+    console.log('Fetching profile for userId:', userId);
     const rows = await profileModel.getProfile(userId);
     if (!rows || rows.length === 0) {
         throw new Error('Profile not found');
@@ -8,24 +9,36 @@ const getProfile = async (userId) => {
     return rows[0];
 };
 
-const updateAvatar = async (userId, avatarUrl) => {
-    if (!avatarUrl) {
-        throw new Error('Avatar URL is required');
+const updateAvatar = async (userId, avatarFileName) => {
+    if (!avatarFileName) {
+        throw new Error('Avatar file name is required');
     }
-    const result = await profileModel.updateAvatar(userId, avatarUrl);
+
+    const result = await profileModel.updateAvatar(userId, avatarFileName);
+
     if (result.affectedRows === 0) {
-        throw new Error('Avatar update failed');
+        throw new Error('Avatar update failed. User not found.');
     }
-    return { message: 'Avatar updated successfully' };
+
+    return { message: 'Profile avatar updated successfully' };
 };
 
-const updateProfile = async (userId, body) => {
-    const { name, headline, bio, phone, location } = body;
-    if (!name || !headline || !bio || !phone || !location) {
-        throw new Error('Missing required fields: name, headline, bio, phone, location');
+const updateProfile = async (id, data) => {
+    try {
+        const result = await profileModel.updateProfile(id, data);
+
+        return {
+            result: true,
+            msg: result.message
+        };
+    } catch (error) {
+        console.error(error);
+
+        return {
+            result: false,
+            msg: "Failed to update profile"
+        };
     }
-    await profileModel.updateProfile(userId, body);
-    return { message: 'Profile updated successfully' };
 };
 
 const uploadCv = async (userId, filename) => {

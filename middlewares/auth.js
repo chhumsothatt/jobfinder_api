@@ -24,8 +24,7 @@ const isLogin = async (req, res, next) => {
 
     const token = parts[1];
     const decode = jwt.verify(token, jwtConfig.secret);
-
-    // name teacher userInfo
+    
     let checkToken = await user.findByToken(token);
 
     if (checkToken.length == 0) { 

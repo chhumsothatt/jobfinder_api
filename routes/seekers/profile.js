@@ -1,15 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const {isLogin} = require('../../middlewares/auth');
+const { isLogin } = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
-const {getProfile,updateAvatar,updateProfile,uploadCv,updateSkill,updateExperience} = require('../../controllers/seekers/profile');
-
+const { getProfile, updateAvatar, updateProfile, uploadCv, updateSkill, updateExperience } = require('../../controllers/seekers/profile');
+const upload = require('../../configs/multer');
 
 // get profile
-router.get('/getprofile',isLogin,getProfile);
+router.get('/getme', isLogin, getProfile);
 
-// update profile
-router.put('/updateprofile',isLogin,validate(),updateProfile);
+// update avatar
+router.put('/avatar', isLogin, upload.single('avatar'), updateAvatar);
+
+// update profile 
+router.put('/updateprofile', isLogin, updateProfile);
 
 // upload cv
 router.post('/updateprofile/cv',isLogin,uploadCv);
