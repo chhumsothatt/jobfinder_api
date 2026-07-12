@@ -1,2 +1,22 @@
-// git 
+#env
 .env
+
+#node
+node_modules/
+
+#log
+*.log
+logs/
+
+#Build
+dist/
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# git 
+README.md
