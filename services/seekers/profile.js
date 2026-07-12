@@ -23,22 +23,29 @@ const updateAvatar = async (userId, avatarFileName) => {
     return { message: 'Profile avatar updated successfully' };
 };
 
-const updateProfile = async (id, data) => {
-    try {
-        const result = await profileModel.updateProfile(id, data);
-
-        return {
-            result: true,
-            msg: result.message
-        };
-    } catch (error) {
-        console.error(error);
-
-        return {
-            result: false,
-            msg: "Failed to update profile"
-        };
+const updateProfile = async (userId, bodyData, file) => {
+    let cvPath = null;
+    if (file) {
+        cvPath = file.path;
     }
+
+    const profileData = {
+        name: bodyData.name,
+        headline: bodyData.headline,
+        bio: bodyData.bio,
+        phone: bodyData.phone,
+        location: bodyData.location,
+        skill: bodyData.skill,
+        cv: cvPath
+    };
+
+    if (!profileData.name) {
+        throw new Error('Name is required');
+    }
+
+    // Now call the model function (not itself) thanks to the alias
+    const result = await profileModel.updateProfile(userId, profileData);
+    return result;
 };
 
 // create Experience
@@ -61,27 +68,6 @@ const createExperience = async (userId, data) => {
     return { message: 'Experience added successfully', experienceId: result.insertId };
 };
 
-const uploadCv = async (userId, filename) => {
-    if (!filename) {
-        throw new Error('Filename is required');
-    }
-    const result = await profileModel.uploadCv(userId, filename);
-    if (result.affectedRows === 0) {
-        throw new Error('CV upload failed');
-    }
-    return { message: 'CV uploaded successfully', cvId: result.insertId };
-};
-
-const updateSkill = async (userId, skill) => {
-    if (!skill) {
-        throw new Error('Skill is required');
-    }
-    const result = await profileModel.updateSkill(skill, userId);
-    if (result.affectedRows === 0) {
-        throw new Error('Skill update failed – user skill record not found');
-    }
-    return { message: 'Skill updated successfully' };
-};
 
 const updateExperience = async (experienceId, data) => {
     const { company_name, position, start_date, end_date, description } = data;
@@ -106,8 +92,6 @@ module.exports = {
     getProfile,
     updateAvatar,
     updateProfile,
-    uploadCv,
-    updateSkill,
     updateExperience,
     createExperience
 };

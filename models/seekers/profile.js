@@ -35,81 +35,50 @@ const updateAvatar = async (id, avatarFileName) => {
 
 
 // Update Profile
-const updateProfile = async (id, data) => {
-    const {
-        name,
-        headline,
-        bio,
-        phone,
-        location
-    } = data;
-
+const updateProfile = async (userId, data) => {
+    const { name, headline, bio, phone, location, skill, cv } = data;
     const conn = await pool.getConnection();
-
     try {
         await conn.beginTransaction();
 
-        // 1. Update tbl_users (Check if user exists)
         const [userResult] = await conn.query(
             `UPDATE tbl_users SET name = ? WHERE id = ?`,
-            [name, id]
+            [name, userId]
         );
-
-        // If no user found, rollback and throw error
         if (userResult.affectedRows === 0) {
-            throw new Error(`User with ID ${id} not found. Update failed.`);
+            throw new Error(`User with ID ${userId} not found.`);
         }
 
-        // 2. Check if the seeker profile already exists
         const [seekerExists] = await conn.query(
             `SELECT id FROM tbl_seekers WHERE user_id = ?`,
-            [id]
+            [userId]
         );
 
         if (seekerExists.length > 0) {
-            // ✅ Case 1: Profile exists → UPDATE it
-            const [seekerResult] = await conn.query(
-                `UPDATE tbl_seekers 
-                 SET headline = ?, bio = ?, phone = ?, location = ? 
-                 WHERE user_id = ?`,
-                [headline, bio, phone, location, id]
-            );
-            
-            // if (seekerResult.affectedRows === 0) console.log("No changes made to seeker profile");
-            
-        } else {
-            // ✅ Case 2: Profile does NOT exist → INSERT it (so you don't get a "silent fail")
             await conn.query(
-                `INSERT INTO tbl_seekers (user_id, headline, bio, phone, location) 
-                 VALUES (?, ?, ?, ?, ?)`,
-                [id, headline, bio, phone, location]
+                `UPDATE tbl_seekers 
+                 SET headline = ?, bio = ?, phone = ?, location = ?, 
+                     skill = ?, cv = ?
+                 WHERE user_id = ?`,
+                [headline, bio, phone, location, skill, cv, userId]
+            );
+        } else {
+            await conn.query(
+                `INSERT INTO tbl_seekers 
+                 (user_id, headline, bio, phone, location, skill, cv) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [userId, headline, bio, phone, location, skill, cv]
             );
         }
 
-        // Commit transaction if everything succeeded
         await conn.commit();
-
-        return {
-            success: true,
-            message: "Profile updated successfully"
-        };
-
+        return { success: true, message: 'Profile updated successfully' };
     } catch (error) {
-        // Rollback on any error
         await conn.rollback();
-        throw error; // Re-throw so the Controller can catch it
+        throw error;
     } finally {
         conn.release();
     }
-};
-
-// Upload CV
-const uploadCv = async (id, filename) => {
-    const [rows] = await pool.query(
-        "INSERT INTO tbl_seeker_cvs (user_id, filename) VALUES (?, ?)",
-        [id, filename]
-    );
-    return rows;
 };
 
 // Create experience
@@ -131,15 +100,6 @@ const createExperience = async (seekerId, data) => {
     }
 };
 
-
-// Update Skill
-const updateSkill = async (skill, id) => {
-    const [rows] = await pool.query(
-        "UPDATE tbl_seekers_skill SET skill = ? WHERE user_id = ?",
-        [skill, id]
-    );
-    return rows;
-};
 
 // In models/profileModel.js
 const getSeekerByUserId = async (userId) => {
@@ -173,8 +133,6 @@ module.exports = {
     getProfile,
     updateAvatar,
     updateProfile,
-    uploadCv,
-    updateSkill,
     updateExperience,
     createExperience,
     getSeekerByUserId
