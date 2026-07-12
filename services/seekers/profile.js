@@ -41,6 +41,26 @@ const updateProfile = async (id, data) => {
     }
 };
 
+// create Experience
+const createExperience = async (userId, data) => {
+    const { company_name, position, start_date, end_date, description } = data;
+    if (!company_name || !position || !start_date || !end_date || !description) {
+        throw new Error('Missing required fields');
+    }
+
+    const seeker = await profileModel.getSeekerByUserId(userId);
+    if (!seeker) {
+        throw new Error('Seeker profile not found');
+    }
+
+    const result = await profileModel.createExperience(seeker.id, data);
+    if (result.affectedRows === 0) {
+        throw new Error('Failed to create experience');
+    }
+
+    return { message: 'Experience added successfully', experienceId: result.insertId };
+};
+
 const uploadCv = async (userId, filename) => {
     if (!filename) {
         throw new Error('Filename is required');
@@ -89,4 +109,5 @@ module.exports = {
     uploadCv,
     updateSkill,
     updateExperience,
+    createExperience
 };

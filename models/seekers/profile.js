@@ -114,9 +114,23 @@ const uploadCv = async (id, filename) => {
 
 // Create experience
 
-const createExperience = async(id,body)=>{
-    let [row] = pool.query('INSERT INTO tbl_seeker_experiences(id,user_id,company_name,position,start_date,end_date,description) VALUES(?,?,?,?,?,?,?)',[body.id,id,body.company_name,body.position,body.start_date,body.end_date,body.description]);
-}
+const createExperience = async (seekerId, data) => {
+    const { company_name, position, start_date, end_date, description } = data;
+    try {
+        const [result] = await pool.query(
+            `INSERT INTO tbl_seeker_experiences 
+             (seeker_id, company_name, position, start_date, end_date, description)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [seekerId, company_name, position, start_date, end_date, description]
+        );
+        console.log('Insert result:', result); // មើលលទ្ធផល
+        return result;
+    } catch (error) {
+        console.error('SQL Error:', error); // បង្ហាញកំហុស SQL
+        throw error; // បោះបន្តទៅ Service
+    }
+};
+
 
 // Update Skill
 const updateSkill = async (skill, id) => {
@@ -125,6 +139,12 @@ const updateSkill = async (skill, id) => {
         [skill, id]
     );
     return rows;
+};
+
+// In models/profileModel.js
+const getSeekerByUserId = async (userId) => {
+    const [rows] = await pool.query('SELECT id FROM tbl_seekers WHERE user_id = ?', [userId]);
+    return rows.length ? rows[0] : null;
 };
 
 // Update Experience
@@ -156,4 +176,6 @@ module.exports = {
     uploadCv,
     updateSkill,
     updateExperience,
+    createExperience,
+    getSeekerByUserId
 };

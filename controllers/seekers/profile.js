@@ -59,6 +59,23 @@ const updateProfile = async (req, res) => {
     }
 };
 
+
+// create Experience
+const createExperience = async (req, res, next) => {
+    try {
+        const userId = req.user.id; // ពី Token
+        const result = await profileService.createExperience(userId, req.body);
+        res.status(201).json({
+            success: true,
+            message: result.message,
+            experienceId: result.experienceId
+        });
+    } catch (error) {
+        console.error('Error creating experience:', error);
+        next(error);
+    }
+};
+
 const uploadCv = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -104,4 +121,5 @@ module.exports = {
     uploadCv,
     updateSkill,
     updateExperience,
+    createExperience
 };

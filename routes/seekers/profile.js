@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { isLogin } = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
-const { getProfile, updateAvatar, updateProfile, uploadCv, updateSkill, updateExperience } = require('../../controllers/seekers/profile');
+const { getProfile, updateAvatar, updateProfile, uploadCv, updateSkill, updateExperience,createExperience } = require('../../controllers/seekers/profile');
 const upload = require('../../configs/multer');
 
 // get profile
@@ -22,5 +22,8 @@ router.put('/updateprofile/skill',isLogin,updateSkill);
 
 // update experience
 router.put('/updateprofile/experience',isLogin,updateExperience);
+
+// create experience
+router.post('/profile/createexperience', isLogin, createExperience);
 
 module.exports = router;
