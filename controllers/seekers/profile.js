@@ -84,10 +84,42 @@ const createExperience = async (req, res, next) => {
     }
 };
 
+// get experience
+const getExperience = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        console.log(userId);
+        
+        const result = await profileService.getExperience(userId);
+        res.status(200).json({
+            success: true,
+            userId: userId,
+            msg: "Success",
+            data: result
+        });
+    } catch (error) {
+        // If it's a known validation error, send 400
+        if (error.message === "userId is required" || error.message === "Seeker profile not found") {
+            return res.status(400).json({
+                success: false,
+                msg: error.message,
+                data: null
+            });
+        }
+        // Otherwise 500
+        res.status(500).json({
+            success: false,
+            msg: "Internal server error",
+            data: null
+        });
+    }
+};
+
 
 module.exports = {
     getProfile,
     updateAvatar,
     updateProfile,
-    createExperience
+    createExperience,
+    getExperience
 };

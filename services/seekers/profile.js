@@ -68,7 +68,17 @@ const createExperience = async (userId, data) => {
     return { message: 'Experience added successfully', experienceId: result.insertId };
 };
 
-
+// get experience
+const getExperience = async (userId) => {
+    if (!userId) {
+        throw new Error("userId is required");
+    }
+    const seeker = await profileModel.getSeekerByUserId(userId);
+    if (!seeker) {
+        throw new Error("Seeker profile not found");
+    }
+    return await profileModel.getExperience(seeker.id);
+};
 const updateExperience = async (experienceId, data) => {
     const { company_name, position, start_date, end_date, description } = data;
     if (!company_name || !position || !start_date || !end_date || !description) {
@@ -93,5 +103,6 @@ module.exports = {
     updateAvatar,
     updateProfile,
     updateExperience,
-    createExperience
+    createExperience,
+    getExperience
 };

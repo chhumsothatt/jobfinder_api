@@ -107,6 +107,15 @@ const getSeekerByUserId = async (userId) => {
     return rows.length ? rows[0] : null;
 };
 
+// get experience
+const getExperience = async (seekerId) => {
+    const [rows] = await pool.query(
+        'SELECT * FROM tbl_seeker_experiences WHERE seeker_id = ?',
+        [seekerId]
+    );
+    return rows;
+};
+
 // Update Experience
 const updateExperience = async (
     company_name,
@@ -135,5 +144,6 @@ module.exports = {
     updateProfile,
     updateExperience,
     createExperience,
-    getSeekerByUserId
+    getSeekerByUserId,
+    getExperience
 };
