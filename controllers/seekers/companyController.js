@@ -1,7 +1,7 @@
 const companyService = require('../../services/seekers/companyService');
 
 
-const getAllCompanies = async (req, res) => {
+const getAllCompany = async (req, res) => {
     try {
         const companies = await companyService.getAllCompanies();
         res.status(200).json({
@@ -38,10 +38,7 @@ const getCompanyDetail = async (req, res) => {
     }
 };
 
-/**
- * GET /companies/search?keyword=...
- * Search companies by keyword.
- */
+
 const searchCompanies = async (req, res) => {
     const { keyword } = req.query;
     console.log(keyword);
@@ -131,7 +128,7 @@ const deleteCompany = async (req, res) => {
 };
 
 module.exports = {
-    getAllCompanies,
+    getAllCompany,
     getCompanyDetail,
     searchCompanies,
     createCompany,
