@@ -7,6 +7,8 @@ class CompanyController {
     getProfile = async (req, res) => {
         try {
             const userId = req.user.id; // from auth middleware
+            console.log(userId);
+            
             const profile = await this.service.getProfile(userId);
             if (!profile) {
                 return res.status(404).json({ status: 'error', message: 'Company profile not found' });

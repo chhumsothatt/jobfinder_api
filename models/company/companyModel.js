@@ -5,11 +5,13 @@ class CompanyModel {
     async getCompanyByUserId(userId) {
         const sql = `
             SELECT c.*, u.name, u.email, u.avatar
-            FROM tbl_companies c
+            FROM tbl_companies c 
             JOIN tbl_users u ON c.user_id = u.id
             WHERE c.user_id = ?
         `;
         const [rows] = await pool.query(sql, [userId]);
+        console.log(rows);
+        
         return rows[0] || null;
     }
 
