@@ -50,6 +50,25 @@ create table tbl_seeker_experiences(
     constraint chk_experiences_date check (end_date is null or end_date >= start_date)
 );
 
+-- ====================tbl_seeker_cvs
+create table tbl_seeker_cvs(
+	id int primary key auto_increment,
+    seeker_id int,
+    filename varchar(200),
+    path varchar(255),
+    is_primary varchar(200),
+    uploaded_at timestamp default current_timestamp,
+    constraint fk_seeker_cvs_seekers foreign key(seeker_id) references tbl_seekers(id) on update cascade on delete cascade
+);
+
+-- =======================tbl_seeker_skills
+create table tbl_seeker_skills(
+	id int auto_increment primary key,
+    cvs_id int ,
+    skill_name varchar(200),
+    level int,
+    constraint fk_seeker_skills_seeker_cvs foreign key(cvs_id) references tbl_seeker_cvs(id) on delete cascade on update cascade
+);
 
 -- ====================================================company
 create table tbl_companies(

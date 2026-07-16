@@ -16,6 +16,8 @@ class CompanyService {
     async createJob(userId, data) {
         const company = await this.model.getCompanyByUserId(userId);
         if (!company) throw new Error('Company profile not found');
+
+        // data នៅទីនេះមានផ្ទុក thumbnail (ឈ្មោះ file) រួចជាស្រេចពី Controller
         const jobId = await this.model.createJob(company.id, data);
         return this.model.getJobById(jobId);
     }

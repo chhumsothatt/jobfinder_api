@@ -4,37 +4,38 @@ class CompanyModel {
     // ----- Profile -----
     async getCompanyByUserId(userId) {
         const sql = `
-            SELECT c.*, u.name, u.email, u.avatar
-            FROM tbl_companies c 
-            JOIN tbl_users u ON c.user_id = u.id
-            WHERE c.user_id = ?
+            SELECT u.id, u.name, u.role, u.avatar, c.industry, c.description, c.location 
+            FROM tbl_users u 
+            LEFT JOIN tbl_companies c ON u.id = c.user_id 
+            WHERE u.id = ?;
         `;
         const [rows] = await pool.query(sql, [userId]);
-        console.log(rows);
-        
+
         return rows[0] || null;
     }
 
     async updateCompanyProfile(userId, data) {
         const { name, avatar, industry, description, location } = data;
 
-        // Update user table (name, avatar)
-        if (name || avatar) {
-            const updates = [];
-            const values = [];
-            if (name) { updates.push('name = ?'); values.push(name); }
-            if (avatar) { updates.push('avatar = ?'); values.push(avatar); }
-            values.push(userId);
-            await pool.query(`UPDATE tbl_users SET ${updates.join(', ')} WHERE id = ?`, values);
+        // 1. Update user table (name, avatar)
+        const userUpdates = [];
+        const userValues = [];
+        if (name !== undefined && name !== "") { userUpdates.push('name = ?'); userValues.push(name); }
+        if (avatar !== undefined && avatar !== "") { userUpdates.push('avatar = ?'); userValues.push(avatar); }
+
+        if (userUpdates.length > 0) {
+            userValues.push(userId);
+            await pool.query(`UPDATE tbl_users SET ${userUpdates.join(', ')} WHERE id = ?`, userValues);
         }
 
-        // Update company table
+        // 2. Update company table (industry, description, location)
         const compUpdates = [];
         const compValues = [];
-        if (industry) { compUpdates.push('industry = ?'); compValues.push(industry); }
-        if (description) { compUpdates.push('description = ?'); compValues.push(description); }
-        if (location) { compUpdates.push('location = ?'); compValues.push(location); }
-        if (compUpdates.length) {
+        if (industry !== undefined && industry !== "") { compUpdates.push('industry = ?'); compValues.push(industry); }
+        if (description !== undefined && description !== "") { compUpdates.push('description = ?'); compValues.push(description); }
+        if (location !== undefined && location !== "") { compUpdates.push('location = ?'); compValues.push(location); }
+
+        if (compUpdates.length > 0) {
             compValues.push(userId);
             await pool.query(`UPDATE tbl_companies SET ${compUpdates.join(', ')} WHERE user_id = ?`, compValues);
         }
@@ -50,12 +51,12 @@ class CompanyModel {
             status, expired_at
         } = data;
         const sql = `
-            INSERT INTO tbl_jobs
-            (company_id, category_id, title, thumbnail, description,
-             requirements, type, location, salary_min, salary_max,
-             status, expired_at, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-        `;
+        INSERT INTO tbl_jobs
+        (company_id, category_id, title, thumbnail, description,
+         requirements, type, location, salary_min, salary_max,
+         status, expired_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+    `;
         const [result] = await pool.query(sql, [
             companyId, category_id, title, thumbnail, description,
             requirements, type, location, salary_min, salary_max,

@@ -8,7 +8,7 @@ class CompanyController {
         try {
             const userId = req.user.id; // from auth middleware
             console.log(userId);
-            
+
             const profile = await this.service.getProfile(userId);
             if (!profile) {
                 return res.status(404).json({ status: 'error', message: 'Company profile not found' });
@@ -21,8 +21,19 @@ class CompanyController {
 
     updateProfile = async (req, res) => {
         try {
-            const userId = req.user.id;
-            const updated = await this.service.updateProfile(userId, req.body);
+            const userId = parseInt(req.user.id);
+
+            // ចម្លងទិន្នន័យចេញពី req.body មកដាក់ក្នុង Object ថ្មីមួយ
+            const updateData = { ...req.body };
+
+            // ប្រសិនបើមាន File (រូបភាព) ត្រូវបាន Upload មកតាម form-data 
+            if (req.file) {
+                updateData.avatar = req.file.filename; // យកឈ្មោះ file ដែលរក្សាទុកនៅលើ server ទៅជំនួស
+            }
+
+            console.log("Data to update:", updateData);
+
+            const updated = await this.service.updateProfile(userId, updateData);
             res.json({ status: 'success', data: updated });
         } catch (err) {
             this.handleError(res, err);
@@ -33,7 +44,16 @@ class CompanyController {
     createJob = async (req, res) => {
         try {
             const userId = req.user.id;
-            const job = await this.service.createJob(userId, req.body);
+
+            // បង្កើត Object ថ្មីមួយពី req.body
+            const jobData = { ...req.body };
+
+            // ប្រសិនបើមាន file រូបភាព thumbnail ត្រូវបាន Upload មក
+            if (req.file) {
+                jobData.thumbnail = req.file.filename; // យកឈ្មោះ file ទៅរក្សាទុក
+            }
+
+            const job = await this.service.createJob(userId, jobData);
             res.status(201).json({ status: 'success', data: job });
         } catch (err) {
             this.handleError(res, err);
