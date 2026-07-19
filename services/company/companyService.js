@@ -15,17 +15,26 @@ class CompanyService {
     // ----- Jobs -----
     async createJob(userId, data) {
         const company = await this.model.getCompanyByUserId(userId);
-        if (!company) throw new Error('Company profile not found');
+        if (!company || !company.company_id) {
+            throw new Error('Company profile not found. Please update your profile first.');
+        }
 
-        // data នៅទីនេះមានផ្ទុក thumbnail (ឈ្មោះ file) រួចជាស្រេចពី Controller
-        const jobId = await this.model.createJob(company.id, data);
+        // ប្រើ company.company_id ជំនួស company.id វិញ
+        const jobId = await this.model.createJob(company.company_id, data);
         return this.model.getJobById(jobId);
     }
 
+    // នៅក្នុង Service
     async getJobs(userId) {
         const company = await this.model.getCompanyByUserId(userId);
-        if (!company) throw new Error('Company profile not found');
-        return this.model.getJobsByCompany(company.id);
+
+        // ប្រសិនបើអត់មាន profile company ទេ
+        if (!company || !company.company_id) {
+            throw new Error('Company profile not found');
+        }
+
+        // ប្តូរពី company.id ទៅជា company.company_id វិញ
+        return this.model.getJobsByCompany(company.company_id);
     }
 
     async getJobDetail(userId, jobId) {

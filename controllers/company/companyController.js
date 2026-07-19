@@ -63,6 +63,8 @@ class CompanyController {
     viewJobs = async (req, res) => {
         try {
             const userId = req.user.id;
+            console.log(userId);
+            
             const jobs = await this.service.getJobs(userId);
             res.json({ status: 'success', data: jobs });
         } catch (err) {
@@ -84,6 +86,8 @@ class CompanyController {
         }
     };
 
+
+    // update ot tver
     updateJob = async (req, res) => {
         try {
             const userId = req.user.id;

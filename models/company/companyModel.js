@@ -4,14 +4,15 @@ class CompanyModel {
     // ----- Profile -----
     async getCompanyByUserId(userId) {
         const sql = `
-            SELECT u.id, u.name, u.role, u.avatar, c.industry, c.description, c.location 
-            FROM tbl_users u 
-            LEFT JOIN tbl_companies c ON u.id = c.user_id 
-            WHERE u.id = ?;
-        `;
+        SELECT 
+            u.id AS user_id, u.name, u.role, u.avatar,
+            c.id AS company_id, c.industry, c.description, c.location
+        FROM tbl_users u
+        LEFT JOIN tbl_companies c ON u.id = c.user_id
+        WHERE u.id = ?
+    `;
         const [rows] = await pool.query(sql, [userId]);
-
-        return rows[0] || null;
+        return rows[0];
     }
 
     async updateCompanyProfile(userId, data) {
@@ -20,8 +21,16 @@ class CompanyModel {
         // 1. Update user table (name, avatar)
         const userUpdates = [];
         const userValues = [];
-        if (name !== undefined && name !== "") { userUpdates.push('name = ?'); userValues.push(name); }
-        if (avatar !== undefined && avatar !== "") { userUpdates.push('avatar = ?'); userValues.push(avatar); }
+
+        // ឆែកមើលថាបើមានតម្លៃផ្ញើមកពិតប្រាកដ និងមិនមែនជា string ពាក្យថា "undefined"
+        if (name !== undefined && name !== null && name !== "" && name !== "undefined") {
+            userUpdates.push('name = ?');
+            userValues.push(name);
+        }
+        if (avatar !== undefined && avatar !== null && avatar !== "" && avatar !== "undefined") {
+            userUpdates.push('avatar = ?');
+            userValues.push(avatar);
+        }
 
         if (userUpdates.length > 0) {
             userValues.push(userId);
@@ -29,20 +38,35 @@ class CompanyModel {
         }
 
         // 2. Update company table (industry, description, location)
+        // 2. Update ឬ Insert ចូលតារាង company (industry, description, location)
         const compUpdates = [];
         const compValues = [];
-        if (industry !== undefined && industry !== "") { compUpdates.push('industry = ?'); compValues.push(industry); }
-        if (description !== undefined && description !== "") { compUpdates.push('description = ?'); compValues.push(description); }
-        if (location !== undefined && location !== "") { compUpdates.push('location = ?'); compValues.push(location); }
+
+        if (industry !== undefined && industry !== null && industry !== "" && industry !== "undefined") { compUpdates.push('industry = ?'); compValues.push(industry); }
+        if (description !== undefined && description !== null && description !== "" && description !== "undefined") { compUpdates.push('description = ?'); compValues.push(description); }
+        if (location !== undefined && location !== null && location !== "" && location !== "undefined") { compUpdates.push('location = ?'); compValues.push(location); }
 
         if (compUpdates.length > 0) {
-            compValues.push(userId);
-            await pool.query(`UPDATE tbl_companies SET ${compUpdates.join(', ')} WHERE user_id = ?`, compValues);
+            // ឆែកមើលសិនថាតើ User នេះមាន Profile ក្នុង tbl_companies ហើយឬនៅ
+            const [existingCompany] = await pool.query(`SELECT id FROM tbl_companies WHERE user_id = ?`, [userId]);
+
+            if (existingCompany.length > 0) {
+                // បើមានហើយ ធ្វើការ UPDATE ធម្មតា
+                compValues.push(userId);
+                await pool.query(`UPDATE tbl_companies SET ${compUpdates.join(', ')} WHERE user_id = ?`, compValues);
+            } else {
+                // បើមិនទាន់មានទេ ធ្វើការ INSERT ថ្មីចូលតែម្តង
+                // បង្កើត Object សម្រាប់ Insert ងាយស្រួលគ្រប់គ្រង
+                const insertSql = `
+            INSERT INTO tbl_companies (user_id, industry, description, location, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, NOW(), NOW())
+        `;
+                await pool.query(insertSql, [userId, industry || null, description || null, location || null]);
+            }
         }
 
         return this.getCompanyByUserId(userId);
     }
-
     // ----- Jobs -----
     async createJob(companyId, data) {
         const {
@@ -67,7 +91,7 @@ class CompanyModel {
 
     async getJobById(jobId, companyId = null) {
         let sql = `
-            SELECT j.*, c.name as company_name, cat.name as category_name
+            SELECT j.*, c.user_id as company_name, cat.name as category_name
             FROM tbl_jobs j
             JOIN tbl_companies c ON j.company_id = c.id
             JOIN tbl_categories cat ON j.category_id = cat.id
@@ -83,6 +107,8 @@ class CompanyModel {
     }
 
     async getJobsByCompany(companyId) {
+        console.log(companyId);
+
         const sql = `
             SELECT j.*, cat.name as category_name
             FROM tbl_jobs j
@@ -111,8 +137,10 @@ class CompanyModel {
     }
 
     async deleteJob(jobId, companyId) {
-        const sql = 'DELETE FROM tbl_jobs WHERE id = ? AND company_id = ?';
+        const sql = `DELETE FROM tbl_jobs WHERE id = ? AND company_id = ?`;
         const [result] = await pool.query(sql, [jobId, companyId]);
+
+        // ត្រូវ return true បើសិនជាមានការលុបជោគជ័យ (affectedRows ធំជាង 0)
         return result.affectedRows > 0;
     }
 
